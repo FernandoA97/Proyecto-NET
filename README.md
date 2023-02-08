@@ -49,7 +49,7 @@ _Deberia mostrarse el resultado siguiente:_
         | _| | _|   \_/ |  //|\\
         |___||_|       /   \\\/\\
 
-Entity Framework Core .NET Command-line Tools 6.0.11
+Entity Framework Core .NET Command-line Tools 7.0.2
 
 ## Instalar EF Core Tools de manera global en el equipo
 
