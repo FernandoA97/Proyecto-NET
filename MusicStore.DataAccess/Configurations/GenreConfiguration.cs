@@ -15,5 +15,15 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
             .HasMaxLength(100);
 
         // builder.ToTable("T0001");
+
+        // Data Seeding
+        // Vamos a crear 5 generos de musica iniciales
+        builder.HasData(
+            new Genre { Id = 1, Name = "Rock" },
+            new Genre { Id = 2, Name = "Pop" },
+            new Genre { Id = 3, Name = "Jazz" },
+            new Genre { Id = 4, Name = "Metal" },
+            new Genre { Id = 5, Name = "Blues" }
+        );
     }
 }
