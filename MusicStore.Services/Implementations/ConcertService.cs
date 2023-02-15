@@ -47,9 +47,48 @@ public class ConcertService : IConcertService
         return response;
     }
 
-    public Task<BaseResponseGeneric<ConcertSingleDtoResponse>> FindByIdAsync(int id)
+    public async Task<BaseResponseGeneric<ConcertSingleDtoResponse>> FindByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        var response = new BaseResponseGeneric<ConcertSingleDtoResponse>();
+
+        try
+        {
+            var concert = await _concertRepository.FindByIdAsync(id);
+
+            if (concert == null)
+            {
+                response.ErrorMessage = "No se encontró el concierto";
+                return response;
+            }
+
+            response.Data = new ConcertSingleDtoResponse
+            {
+                Id = concert.Id,
+                Title = concert.Title,
+                Description = concert.Description,
+                DateEvent = concert.DateEvent.ToString("yyyy-MM-dd"),
+                TimeEvent = concert.DateEvent.ToString("HH:mm"),
+                ImageUrl = concert.ImageUrl,
+                Place = concert.Place,
+                TicketsQuantity = concert.TicketsQuantity,
+                UnitPrice = concert.UnitPrice,
+                Status = concert.Status ? "Activo" : "Inactivo",
+                GenreDtoResponse = new GenreDtoResponse
+                {
+                    Id = concert.Genre.Id,
+                    Name = concert.Genre.Name,
+                    Status = concert.Genre.Status
+                }
+            };
+            response.Success = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener el concierto");
+            response.ErrorMessage = "Error al obtener el concierto";
+        }
+
+        return response;
     }
 
     public async Task<BaseResponseGeneric<int>> AddAsync(ConcertDtoRequest request)
@@ -81,18 +120,73 @@ public class ConcertService : IConcertService
         return response;
     }
 
-    public Task<BaseResponse> UpdateAsync(int id, ConcertDtoRequest request)
+    public async Task<BaseResponse> UpdateAsync(int id, ConcertDtoRequest request)
     {
-        throw new NotImplementedException();
+        var response = new BaseResponse();
+
+        try
+        {
+            var concert = await _concertRepository.FindByIdAsync(id);
+
+            if (concert == null)
+            {
+                response.ErrorMessage = "No se encontró el concierto";
+                return response;
+            }
+
+            concert.Title = request.Title;
+            concert.Description = request.Description;
+            concert.DateEvent = Convert.ToDateTime($"{request.DateEvent} {request.TimeEvent}");
+            concert.GenreId = request.IdGenre;
+            concert.UnitPrice = request.UnitPrice;
+            concert.TicketsQuantity = request.TicketsQuantity;
+            concert.Place = request.Place;
+
+            await _concertRepository.UpdateAsync();
+            response.Success = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar el concierto {message}", ex.Message);
+            response.ErrorMessage = "Error al actualizar el concierto";
+        }
+
+        return response;
     }
 
-    public Task<BaseResponse> DeleteAsync(int id)
+    public async Task<BaseResponse> DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var response = new BaseResponse();
+
+        try
+        {
+            await _concertRepository.DeleteAsync(id);
+            response.Success = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar el concierto");
+            response.ErrorMessage = "Error al eliminar el concierto";
+        }
+
+        return response;
     }
 
-    public Task<BaseResponse> FinalizeAsync(int id)
+    public async Task<BaseResponse> FinalizeAsync(int id)
     {
-        throw new NotImplementedException();
+        var response = new BaseResponse();
+
+        try
+        {
+            await _concertRepository.FinalizeAsync(id);
+            response.Success = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al finalizar el concierto");
+            response.ErrorMessage = "Error al finalizar el concierto";
+        }
+
+        return response;
     }
 }

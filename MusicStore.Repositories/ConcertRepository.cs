@@ -51,4 +51,33 @@ public class ConcertRepository : IConcertRepository
 
         return entity.Id;
     }
+
+    public async Task UpdateAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var entity = await _context.Set<Concert>().FindAsync(id);
+
+        if (entity != null)
+        {
+            entity.Status = false;
+            await _context.SaveChangesAsync();
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    public async Task FinalizeAsync(int id)
+    {
+        var entity = await _context.Set<Concert>().FindAsync(id);
+
+        if (entity == null) throw new InvalidOperationException();
+        
+        entity.Finalized = true;
+        await _context.SaveChangesAsync();
+
+    }
 }
