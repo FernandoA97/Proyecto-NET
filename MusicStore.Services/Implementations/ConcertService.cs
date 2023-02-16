@@ -11,11 +11,13 @@ public class ConcertService : IConcertService
 {
     private readonly IConcertRepository _concertRepository;
     private readonly ILogger<ConcertService> _logger;
+    private readonly IFileUploader _fileUploader;
 
-    public ConcertService(IConcertRepository concertRepository, ILogger<ConcertService> logger)
+    public ConcertService(IConcertRepository concertRepository, ILogger<ConcertService> logger, IFileUploader fileUploader)
     {
         _concertRepository = concertRepository;
         _logger = logger;
+        _fileUploader = fileUploader;
     }
 
     public async Task<BaseResponseGeneric<ICollection<ConcertDtoResponse>>> ListAsync(string? filter, int page, int rows)
@@ -34,7 +36,9 @@ public class ConcertService : IConcertService
                 Genre = p.Genre,
                 ImageUrl = p.ImageUrl,
                 UnitPrice = p.UnitPrice,
-                TicketsQuantity = p.TicketsQuantity
+                TicketsQuantity = p.TicketsQuantity,
+                Place = p.Place,
+                Status = p.Status
             }).ToList();
             response.Success = true;
         }
@@ -107,6 +111,9 @@ public class ConcertService : IConcertService
                 TicketsQuantity = request.TicketsQuantity,
                 Place = request.Place,
             };
+
+            concert.ImageUrl = await _fileUploader.UploadFileAsync(request.Base64Image, request.FileName);
+
             await _concertRepository.AddAsync(concert);
             response.Data = concert.Id;
             response.Success = true;
@@ -126,7 +133,7 @@ public class ConcertService : IConcertService
 
         try
         {
-            var concert = await _concertRepository.FindByIdAsync(id);
+            var concert = await _concertRepository.FindByIdAsync(id); // Este SELECT usa el ChangeTracker
 
             if (concert == null)
             {
@@ -141,6 +148,9 @@ public class ConcertService : IConcertService
             concert.UnitPrice = request.UnitPrice;
             concert.TicketsQuantity = request.TicketsQuantity;
             concert.Place = request.Place;
+
+            if (!string.IsNullOrEmpty(request.FileName))
+                concert.ImageUrl = await _fileUploader.UploadFileAsync(request.Base64Image, request.FileName);
 
             await _concertRepository.UpdateAsync();
             response.Success = true;

@@ -21,4 +21,8 @@ public class ConcertDtoRequest
     public decimal UnitPrice { get; set; }
     public int TicketsQuantity { get; set; }
 
+    public string? Base64Image { get; set; }
+
+    public string? FileName { get; set; }
+
 }
