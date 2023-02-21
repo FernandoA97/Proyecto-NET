@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using MusicStore.Dto.Request;
 using MusicStore.Dto.Response;
 using MusicStore.Entities;
@@ -12,34 +13,36 @@ public class ConcertService : IConcertService
     private readonly IConcertRepository _concertRepository;
     private readonly ILogger<ConcertService> _logger;
     private readonly IFileUploader _fileUploader;
+    private readonly IMapper _mapper;
 
-    public ConcertService(IConcertRepository concertRepository, ILogger<ConcertService> logger, IFileUploader fileUploader)
+    public ConcertService(IConcertRepository concertRepository, 
+        ILogger<ConcertService> logger, 
+        IFileUploader fileUploader, 
+        IMapper mapper)
     {
         _concertRepository = concertRepository;
         _logger = logger;
         _fileUploader = fileUploader;
+        _mapper = mapper;
     }
 
-    public async Task<BaseResponseGeneric<ICollection<ConcertDtoResponse>>> ListAsync(string? filter, int page, int rows)
+    public async Task<BaseResponsePagination<ConcertDtoResponse>> ListAsync(string? filter, int page, int rows)
     {
-        var response = new BaseResponseGeneric<ICollection<ConcertDtoResponse>>();
+        var response = new BaseResponsePagination<ConcertDtoResponse> ();
         try
         {
-            var concerts = await _concertRepository.ListAsync(filter, page, rows);
-            response.Data = concerts.Select(p => new ConcertDtoResponse
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                DateEvent = p.DateEvent,
-                TimeEvent = p.TimeEvent,
-                Genre = p.Genre,
-                ImageUrl = p.ImageUrl,
-                UnitPrice = p.UnitPrice,
-                TicketsQuantity = p.TicketsQuantity,
-                Place = p.Place,
-                Status = p.Status
-            }).ToList();
+            var tuple = await _concertRepository
+                .ListAsync(x => x.Title.Contains(filter ?? string.Empty),
+                    p => _mapper.Map<ConcertDtoResponse>(p),
+                    x => x.Title,
+                    page, 
+                    rows);
+            
+            response.Collection = tuple.Collection;
+            response.TotalPages = tuple.Total / rows;
+            if (tuple.Total % rows > 0) // Si el residuo es mayor a cero
+                response.TotalPages++;
+
             response.Success = true;
         }
         catch (Exception ex)
@@ -65,25 +68,7 @@ public class ConcertService : IConcertService
                 return response;
             }
 
-            response.Data = new ConcertSingleDtoResponse
-            {
-                Id = concert.Id,
-                Title = concert.Title,
-                Description = concert.Description,
-                DateEvent = concert.DateEvent.ToString("yyyy-MM-dd"),
-                TimeEvent = concert.DateEvent.ToString("HH:mm"),
-                ImageUrl = concert.ImageUrl,
-                Place = concert.Place,
-                TicketsQuantity = concert.TicketsQuantity,
-                UnitPrice = concert.UnitPrice,
-                Status = concert.Status ? "Activo" : "Inactivo",
-                GenreDtoResponse = new GenreDtoResponse
-                {
-                    Id = concert.Genre.Id,
-                    Name = concert.Genre.Name,
-                    Status = concert.Genre.Status
-                }
-            };
+            response.Data = _mapper.Map<ConcertSingleDtoResponse>(concert);
             response.Success = true;
         }
         catch (Exception ex)
@@ -101,16 +86,7 @@ public class ConcertService : IConcertService
 
         try
         {
-            var concert = new Concert
-            {
-                Title = request.Title,
-                Description = request.Description,
-                DateEvent = Convert.ToDateTime($"{request.DateEvent} {request.TimeEvent}"),
-                GenreId = request.IdGenre,
-                UnitPrice = request.UnitPrice,
-                TicketsQuantity = request.TicketsQuantity,
-                Place = request.Place,
-            };
+            var concert = _mapper.Map<Concert>(request);
 
             concert.ImageUrl = await _fileUploader.UploadFileAsync(request.Base64Image, request.FileName);
 
@@ -141,13 +117,7 @@ public class ConcertService : IConcertService
                 return response;
             }
 
-            concert.Title = request.Title;
-            concert.Description = request.Description;
-            concert.DateEvent = Convert.ToDateTime($"{request.DateEvent} {request.TimeEvent}");
-            concert.GenreId = request.IdGenre;
-            concert.UnitPrice = request.UnitPrice;
-            concert.TicketsQuantity = request.TicketsQuantity;
-            concert.Place = request.Place;
+            _mapper.Map(request, concert); // Este UPDATE usa el ChangeTracker
 
             if (!string.IsNullOrEmpty(request.FileName))
                 concert.ImageUrl = await _fileUploader.UploadFileAsync(request.Base64Image, request.FileName);

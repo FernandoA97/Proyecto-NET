@@ -1,91 +1,51 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using MusicStore.DataAccess;
 using MusicStore.Entities;
-using MusicStore.Entities.Infos;
 
 namespace MusicStore.Repositories;
 
-public class ConcertRepository : IConcertRepository
+public class ConcertRepository : RepositoryBase<Concert>, IConcertRepository
 {
-    private readonly MusicStoreDbContext _context;
-
     public ConcertRepository(MusicStoreDbContext context)
+        :base(context)
     {
-        _context = context;
     }
-    public async Task<ICollection<ConcertInfo>> ListAsync(string? filter, int page, int rows)
+
+    /// <summary>
+    /// Esta funcion trae todos los conciertos y agregando la clase de Genre
+    /// </summary>
+    public override async Task<(ICollection<TInfo> Collection, int Total)> ListAsync<TInfo, TKey>(Expression<Func<Concert, bool>> predicate, Expression<Func<Concert, TInfo>> selector, Expression<Func<Concert, TKey>> orderBy, int page, int rows)
     {
-        return await _context.Set<Concert>()
+        var collection = await Context.Set<Concert>()
             .Include(p => p.Genre) // Eager Loading
-            .Where(p => p.Status
-            && (p.Title.Contains(filter ?? string.Empty)))
-            .OrderByDescending(p => p.DateEvent)
+            .Where(predicate)
+            .OrderByDescending(orderBy)
             .Skip((page - 1) * rows)
             .Take(rows)
-            .Select(p => new ConcertInfo
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                DateEvent = p.DateEvent.ToString("yyyy-MM-dd"),
-                TimeEvent = p.DateEvent.ToString("HH:mm:ss"),
-                Genre = p.Genre.Name, // Lazy Loading
-                UnitPrice = p.UnitPrice,
-                ImageUrl = p.ImageUrl,
-                Place = p.Place,
-                TicketsQuantity = p.TicketsQuantity,
-                Status = p.Finalized ? "Finalizado" : "Pendiente"
-            })
-            .AsNoTracking() // Permite traer los datos sin el ChangeTracker de EF Core
+            .AsNoTracking()
+            .Select(selector)
             .ToListAsync();
+
+        var total = await Context.Set<Concert>()
+            .Where(predicate)
+            .CountAsync();
+
+        return (collection, total);
     }
 
-    public async Task<Concert?> FindByIdAsync(int id)
+    public override async Task<Concert?> FindByIdAsync(int id)
     {
-        return await _context.Set<Concert>()
-            .Include(p => p.Genre)
+        return await Context.Set<Concert>()
+            .Include(p => p.Genre) // Eager Loading
             .FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    public async Task<int> AddAsync(Concert entity)
-    {
-        await _context.Set<Concert>().AddAsync(entity);
-        await _context.SaveChangesAsync();
-
-        return entity.Id;
-    }
-
-    public async Task UpdateAsync()
-    {
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(int id)
-    {
-        var entity = await _context.Set<Concert>()
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        //var entity = new Concert { Id = id};
-
-        // Modelo Desconectado.
-        //_context.Set<Concert>().Remove(entity);
-        //_context.Entry(entity).State = EntityState.Deleted;
-        //await _context.SaveChangesAsync();
-
-        if (entity != null)
-        {
-            entity.Status = false;
-            await UpdateAsync();
-        }
-        else
-            throw new InvalidOperationException("No se encontró el concierto");
     }
 
     public async Task FinalizeAsync(int id)
     {
         // Modelo Conectado. EF Core tiene el registro en memoria
 
-        var entity = await _context.Set<Concert>().SingleOrDefaultAsync(x => x.Id == id
+        var entity = await Context.Set<Concert>().SingleOrDefaultAsync(x => x.Id == id
             && x.Status);
 
         if (entity == null) throw new InvalidOperationException("No se encontró el concierto");

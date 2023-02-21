@@ -5,6 +5,7 @@ using MusicStore.Entities;
 using MusicStore.Repositories;
 using MusicStore.Services.Implementations;
 using MusicStore.Services.Interfaces;
+using MusicStore.Services.Profiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,17 +15,31 @@ builder.Services.Configure<AppSettings>(builder.Configuration);
 builder.Services.AddDbContext<MusicStoreDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database"));
+
+    if (builder.Environment.IsDevelopment())
+        options.EnableSensitiveDataLogging();
 });
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<GenreProfile>();
+    config.AddProfile<ConcertProfile>();
+});
+
 builder.Services.AddTransient<IGenreRepository, GenreRepository>();
 builder.Services.AddTransient<IGenreService, GenreService>();
 
 builder.Services.AddTransient<IConcertRepository, ConcertRepository>();
 builder.Services.AddTransient<IConcertService, ConcertService>();
+
+builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+builder.Services.AddTransient<ISaleRepository, SaleRepository>();
+builder.Services.AddTransient<ISaleService, SaleService>();
+
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddTransient<IFileUploader, FileUploader>();
