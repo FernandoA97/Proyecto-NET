@@ -1,4 +1,8 @@
+using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Validations;
 using MusicStore.DataAccess;
 using MusicStore.Dto.Request;
 using MusicStore.Entities;
@@ -19,6 +23,20 @@ builder.Services.AddDbContext<MusicStoreDbContext>(options =>
     if (builder.Environment.IsDevelopment())
         options.EnableSensitiveDataLogging();
 });
+
+builder.Services.AddIdentity<MusicStoreUserIdentity, IdentityRole>(policies =>
+{
+    policies.Password.RequireDigit = false;
+    policies.Password.RequireLowercase = false;
+    policies.Password.RequireUppercase = false;
+    policies.Password.RequireNonAlphanumeric = false;
+    policies.Password.RequiredLength = 5;
+
+    policies.User.RequireUniqueEmail = true;
+})
+    .AddEntityFrameworkStores<MusicStoreDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -28,6 +46,7 @@ builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<GenreProfile>();
     config.AddProfile<ConcertProfile>();
+    config.AddProfile<SaleProfile>();
 });
 
 builder.Services.AddTransient<IGenreRepository, GenreRepository>();
@@ -39,12 +58,34 @@ builder.Services.AddTransient<IConcertService, ConcertService>();
 builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
 builder.Services.AddTransient<ISaleRepository, SaleRepository>();
 builder.Services.AddTransient<ISaleService, SaleService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddTransient<IFileUploader, FileUploader>();
 else
     builder.Services.AddTransient<IFileUploader, AzureBlobStorageUploader>();
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = "Bearer";
+    x.DefaultChallengeScheme = "Bearer";
+}).AddJwtBearer(x =>
+{
+    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException());
+
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+
+});
 
 var app = builder.Build();
 
@@ -57,6 +98,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

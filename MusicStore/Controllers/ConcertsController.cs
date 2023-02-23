@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MusicStore.Dto.Request;
 using MusicStore.Services.Interfaces;
 
@@ -56,6 +57,7 @@ public class ConcertsController : ControllerBase
 
     // DELETE api/Concerts/5
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> DeleteAsync(int id)
     {
         var response = await _service.DeleteAsync(id);
