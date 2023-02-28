@@ -50,7 +50,14 @@ public class UserService : IUserService
 
             var result = await _userManager.CheckPasswordAsync(identity, request.Password);
             if (!result)
-                throw new ApplicationException("Usuario o clave incorrectos");
+            {
+                response.Success = false;
+                response.ErrorMessage = "Usuario o clave incorrectos";
+
+                _logger.LogWarning($"Error de autenticacion para el usuario {request.UserName}");
+                
+                return response;
+            }
 
             var roles = await _userManager.GetRolesAsync(identity);
 

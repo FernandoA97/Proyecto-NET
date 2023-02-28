@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +8,40 @@ using MusicStore.Repositories;
 using MusicStore.Services.Implementations;
 using MusicStore.Services.Interfaces;
 using MusicStore.Services.Profiles;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.MSSqlServer;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var corsConfig = "MusicStoreAPI";
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console(LogEventLevel.Information)
+    .WriteTo.File("..\\log.txt",
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel:LogEventLevel.Warning)
+    .WriteTo.MSSqlServer(builder.Configuration.GetConnectionString("Database"),
+        new MSSqlServerSinkOptions
+        {
+            AutoCreateSqlTable = true,
+            TableName = "ApiLogs"
+        }, restrictedToMinimumLevel: LogEventLevel.Warning)
+    .CreateLogger();
+
+builder.Logging.AddSerilog(logger);
+
+builder.Services.AddCors(setup =>
+{
+    setup.AddPolicy(corsConfig, x =>
+    {
+        x.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
@@ -110,6 +140,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCors(corsConfig);
 
 app.MapControllers();
 

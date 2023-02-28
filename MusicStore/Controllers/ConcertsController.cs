@@ -12,10 +12,12 @@ namespace MusicStore.Controllers;
 public class ConcertsController : ControllerBase
 {
     private readonly IConcertService _service;
+    private readonly ILogger<ConcertsController> _logger;
 
-    public ConcertsController(IConcertService service)
+    public ConcertsController(IConcertService service, ILogger<ConcertsController> logger)
     {
         _service = service;
+        _logger = logger;
     }
 
     // GET api/Concerts?page=1&rows=10
@@ -25,6 +27,9 @@ public class ConcertsController : ControllerBase
     public async Task<IActionResult> ListAsync(string? filter, int page = 1, int rows = 10)
     {
         var response = await _service.ListAsync(filter, page, rows);
+
+        if (filter == null)
+            _logger.LogWarning("Se realizo una busqueda sin filtros");
 
         return response.Success ? Ok(response) : NotFound(response);
     }
@@ -60,7 +65,7 @@ public class ConcertsController : ControllerBase
 
     // DELETE api/Concerts/5
     [HttpDelete("{id:int}")]
-    
+
     public async Task<IActionResult> DeleteAsync(int id)
     {
         var response = await _service.DeleteAsync(id);
