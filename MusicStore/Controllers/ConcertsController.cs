@@ -7,6 +7,8 @@ namespace MusicStore.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+//[Authorize(Policy = "Admins")]
+[Authorize]
 public class ConcertsController : ControllerBase
 {
     private readonly IConcertService _service;
@@ -19,6 +21,7 @@ public class ConcertsController : ControllerBase
     // GET api/Concerts?page=1&rows=10
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> ListAsync(string? filter, int page = 1, int rows = 10)
     {
         var response = await _service.ListAsync(filter, page, rows);
@@ -57,7 +60,7 @@ public class ConcertsController : ControllerBase
 
     // DELETE api/Concerts/5
     [HttpDelete("{id:int}")]
-    [Authorize]
+    
     public async Task<IActionResult> DeleteAsync(int id)
     {
         var response = await _service.DeleteAsync(id);

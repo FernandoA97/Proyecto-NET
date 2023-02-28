@@ -1,8 +1,7 @@
-using System.Text;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Validations;
 using MusicStore.DataAccess;
 using MusicStore.Dto.Request;
 using MusicStore.Entities;
@@ -10,6 +9,7 @@ using MusicStore.Repositories;
 using MusicStore.Services.Implementations;
 using MusicStore.Services.Interfaces;
 using MusicStore.Services.Profiles;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +66,16 @@ if (builder.Environment.IsDevelopment())
 else
     builder.Services.AddTransient<IFileUploader, AzureBlobStorageUploader>();
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admins", policy =>
+    {
+        policy.RequireRole("Admin");
+        //policy.RequireClaim(ClaimTypes.Gender);
+    });
+
+});
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = "Bearer";
@@ -120,21 +130,21 @@ app.MapPost("api/Genres", async (IGenreService service, GenreDtoRequest request)
     var response = await service.AddAsync(request);
 
     return response.Success ? Results.Ok(response) : Results.BadRequest(response);
-});
+}).RequireAuthorization("Admins");
 
 app.MapPut("api/Genres/{id:int}", async (IGenreService service, int id, GenreDtoRequest request) =>
 {
     var response = await service.UpdateAsync(id, request);
 
     return response.Success ? Results.Ok(response) : Results.BadRequest(response);
-});
+}).RequireAuthorization("Admins");
 
 app.MapDelete("api/Genres/{id:int}", async (IGenreService service, int id) =>
 {
     var response = await service.DeleteAsync(id);
 
     return response.Success ? Results.Ok(response) : Results.NotFound(response);
-});
+}).RequireAuthorization("Admins");
 
 app.Run();
 

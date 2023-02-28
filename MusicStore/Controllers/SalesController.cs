@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MusicStore.Dto.Request;
 using MusicStore.Dto.Response;
 using MusicStore.Services.Interfaces;
@@ -7,6 +9,7 @@ namespace MusicStore.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SalesController : ControllerBase
 {
     private readonly ISaleService _service;
@@ -19,8 +22,10 @@ public class SalesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateSaleAsync(string email, [FromBody] SaleDtoRequest request)
+    public async Task<IActionResult> CreateSaleAsync([FromBody] SaleDtoRequest request)
     {
+        var email = User.FindFirstValue(ClaimTypes.Email)!;
+        
         var response = await _service.CreateSaleAsync(email, request);
 
         if (response.Success)
@@ -32,8 +37,10 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("ListSales")]
-    public async Task<IActionResult> GetListSales(string email, string? filter, int page = 1, int rows = 10)
+    public async Task<IActionResult> GetListSales(string? filter, int page = 1, int rows = 10)
     {
+        var email = HttpContext.User.FindFirst(ClaimTypes.Email)!.Value;
+        
         var response = await _service.ListAsync(email, filter, page, rows);
 
         if (response.Success)
@@ -45,6 +52,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("ListSalesByDate")]
+    [Authorize(Policy = "Admins")]
     public async Task<IActionResult> GetListSalesByDate(string dateStart, string dateEnd, int page = 1, int rows = 10)
     {
         try

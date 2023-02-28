@@ -52,15 +52,21 @@ public class UserService : IUserService
             if (!result)
                 throw new ApplicationException("Usuario o clave incorrectos");
 
+            var roles = await _userManager.GetRolesAsync(identity);
+
             var expiredDate = DateTime.Now.AddDays(1);
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, request.UserName),
-                new Claim(ClaimTypes.Role, "Admin"),
-                new Claim(ClaimTypes.Role, "User"),
+                new Claim(ClaimTypes.Email, request.UserName),
                 new Claim(ClaimTypes.Expiration, expiredDate.ToString("yyyy-MM-dd HH:mm:ss"))
             };
+
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            response.Roles = new List<string>();
+            response.Roles.AddRange(roles);
 
             // Creacion de Token JWT
             var symmetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Value.Jwt.SecretKey));
@@ -78,7 +84,7 @@ public class UserService : IUserService
             var token = new JwtSecurityToken(header, payload);
 
             response.Token = new JwtSecurityTokenHandler().WriteToken(token);
-            
+            response.FullName = $"{identity.FirstName} {identity.LastName}";
             response.Success = true;
         }
         catch (Exception ex)
