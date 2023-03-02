@@ -79,3 +79,9 @@ _Esto hará que se cree la base de datos en la cadena de conexión de no existir
 `dotnet new gitignore`
 
 _La plantilla "archivo gitignore de dotnet" se creó correctamente._
+
+## Comandos para crear un migration bundle
+
+Este comando creara el archivo ejecutable del bundle en una carpeta distinta a la fuente, mostrando el detalle de la operacion y optimizada para Windows de 64 bits, se utiliza el parametro --force para sobrescribir el archivo en caso de existir ya en la carpeta.
+
+`dotnet ef migrations bundle --project .\MusicStore.DataAccess\ --startup-project .\MusicStore\ -o C:\Servidor\bundlemusicstore.exe --verbose --self-contained -r win-x64 --force`
