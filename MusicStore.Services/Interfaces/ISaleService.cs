@@ -12,4 +12,6 @@ public interface ISaleService
     Task<BaseResponsePagination<SaleDtoResponse>> ListAsync(string email, string? filter, int page, int rows);
 
     Task<BaseResponseGeneric<ICollection<ReportDtoResponse>>> GetReportSaleAsync(DateTime dateStart, DateTime dateEnd);
+    
+    Task<BaseResponseGeneric<SaleDtoResponse>> GetSaleAsync(int id);
 }

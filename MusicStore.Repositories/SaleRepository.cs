@@ -101,4 +101,15 @@ public class SaleRepository : RepositoryBase<Sale>, ISaleRepository
         }
 
     }
+
+    public async Task<Sale?> GetByIdAsync(int id, Expression<Func<Sale, bool>> predicate)
+    {
+        return await Context.Set<Sale>()
+            .Include(p => p.Concert)
+            .ThenInclude(p => p.Genre)
+            .Include(p => p.Customer)
+            .Where(predicate)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+    }
 }

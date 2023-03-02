@@ -19,10 +19,10 @@ var corsConfig = "MusicStoreAPI";
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(LogEventLevel.Information)
-    .WriteTo.File("..\\log.txt",
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-        rollingInterval: RollingInterval.Day,
-        restrictedToMinimumLevel:LogEventLevel.Warning)
+    //.WriteTo.File("..\\log.txt",
+    //    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+    //    rollingInterval: RollingInterval.Day,
+    //    restrictedToMinimumLevel:LogEventLevel.Warning)
     .WriteTo.MSSqlServer(builder.Configuration.GetConnectionString("Database"),
         new MSSqlServerSinkOptions
         {
@@ -37,6 +37,8 @@ builder.Services.AddCors(setup =>
 {
     setup.AddPolicy(corsConfig, x =>
     {
+        x.WithOrigins(builder.Configuration.GetValue<string>("Origins")!);
+        
         x.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();

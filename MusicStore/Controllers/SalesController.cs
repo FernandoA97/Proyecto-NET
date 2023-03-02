@@ -73,4 +73,12 @@ public class SalesController : ControllerBase
         }
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetSaleAsync(int id)
+    {
+        var response = await _service.GetSaleAsync(id);
+
+        return response.Success ? Ok(response) : NotFound(response);
+    }
+
 }

@@ -16,5 +16,7 @@ namespace MusicStore.Repositories
 
 
         Task<ICollection<ReportInfo>> GetReportSaleAsync(DateTime dateStart, DateTime dateEnd);
+
+        Task<Sale?> GetByIdAsync(int id, Expression<Func<Sale, bool>> predicate);
     }
 }

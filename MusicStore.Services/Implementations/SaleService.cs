@@ -154,4 +154,24 @@ public class SaleService : ISaleService
 
         return response;
     }
+
+    public async Task<BaseResponseGeneric<SaleDtoResponse>> GetSaleAsync(int id)
+    {
+        var response = new BaseResponseGeneric<SaleDtoResponse>();
+
+        try
+        {
+            var sale = await _repository.GetByIdAsync(id, x => x.Id == id);
+            response.Data = _mapper.Map<SaleDtoResponse>(sale);
+            response.Success = sale != null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error al obtener la venta {message}", ex.Message);
+            response.Success = false;
+            response.ErrorMessage = "Error al obtener la venta";
+        }
+
+        return response;
+    }
 }
