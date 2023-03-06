@@ -21,20 +21,23 @@ public class UserService : IUserService
     private readonly UserManager<MusicStoreUserIdentity> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IEmailService _emailService;
 
-    public UserService(ILogger<UserService> logger, 
-        IOptions<AppSettings> options, 
-        UserManager<MusicStoreUserIdentity> userManager, 
+    public UserService(ILogger<UserService> logger,
+        IOptions<AppSettings> options,
+        UserManager<MusicStoreUserIdentity> userManager,
         RoleManager<IdentityRole> roleManager,
-        ICustomerRepository customerRepository)
+        ICustomerRepository customerRepository,
+        IEmailService emailService)
     {
         _logger = logger;
         _options = options;
         _userManager = userManager;
         _roleManager = roleManager;
         _customerRepository = customerRepository;
+        _emailService = emailService;
     }
-    
+
     public async Task<LoginDtoResponse> LoginAsync(LoginDtoRequest request)
     {
         var response = new LoginDtoResponse();
@@ -55,7 +58,7 @@ public class UserService : IUserService
                 response.ErrorMessage = "Usuario o clave incorrectos";
 
                 _logger.LogWarning($"Error de autenticacion para el usuario {request.UserName}");
-                
+
                 return response;
             }
 
@@ -82,10 +85,10 @@ public class UserService : IUserService
 
             var header = new JwtHeader(credentials);
 
-            var payload = new JwtPayload(_options.Value.Jwt.Issuer, 
-                _options.Value.Jwt.Audience, 
-                claims, 
-                DateTime.Now, 
+            var payload = new JwtPayload(_options.Value.Jwt.Issuer,
+                _options.Value.Jwt.Audience,
+                claims,
+                DateTime.Now,
                 expiredDate);
 
             var token = new JwtSecurityToken(header, payload);
@@ -144,6 +147,9 @@ public class UserService : IUserService
 
                     await _customerRepository.AddAsync(customer);
 
+                    await _emailService.SendEmailAsync(request.Email, $"Creacion de Cuenta para {customer.FullName}",
+                        $"Se ha creado su cuenta <strong>{user.UserName}</strong> exitosamente en nuestro sistema, bienvenido!");
+
                     response.Success = true;
                     response.Data = user.Id;
                 }
@@ -160,13 +166,133 @@ public class UserService : IUserService
                 response.ErrorMessage = sb.ToString();
                 sb.Length = 0;
             }
-            
+
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in RegisterAsync");
             response.Success = false;
             response.ErrorMessage = "Error in RegisterAsync";
+        }
+
+        return response;
+    }
+
+    public async Task<BaseResponse> RequestTokenToResetPasswordAsync(DtoRequestPassword request)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            var userIdentity = await _userManager.FindByEmailAsync(request.Email);
+
+            if (userIdentity == null)
+            {
+                throw new ApplicationException("Usuario no existe");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userIdentity);
+
+            // Enviar un correo
+            await _emailService.SendEmailAsync(request.Email, "Restablecer contraseña",
+                $"Hola {userIdentity.FirstName} {userIdentity.LastName} para restablecer su contraseña copie el siguiente token: {token}");
+
+            _logger.LogInformation("Se envio correo con solicitud para reseteo a {email}", request.Email);
+
+            response.Success = true;
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.ErrorMessage = "No se pudo completar la solicitud";
+            _logger.LogError(ex, "Error al resetear password {Message}", ex.Message);
+        }
+
+        return response;
+    }
+
+    public async Task<BaseResponse> ResetPasswordAsync(DtoResetPassword request)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            var userIdentity = await _userManager.FindByEmailAsync(request.Email);
+
+            if (userIdentity == null)
+            {
+                throw new ApplicationException("Usuario no existe");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(userIdentity, request.Token, request.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var sb = new StringBuilder();
+                foreach (var error in result.Errors)
+                {
+                    sb.AppendLine(error.Description);
+                }
+
+                response.ErrorMessage = sb.ToString();
+                sb.Length = 0;
+            }
+            else
+            {
+                await _emailService.SendEmailAsync(userIdentity.Email!, "Reseteo de password",
+                    $"Hola {userIdentity.FirstName} se ha reseteado tu password de forma exitosa");
+
+                response.Success = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.ErrorMessage = "No se pudo completar la solicitud";
+            _logger.LogError(ex, "Error al resetear password {Message}", ex.Message);
+        }
+
+        return response;
+    }
+
+    public async Task<BaseResponse> ChangePasswordAsync(DtoChangePassword request)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            var userIdentity = await _userManager.FindByEmailAsync(request.Email);
+
+            if (userIdentity == null)
+            {
+                throw new ApplicationException("Usuario no existe");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(userIdentity, request.OldPassword, request.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var sb = new StringBuilder();
+                foreach (var error in result.Errors)
+                {
+                    sb.AppendLine(error.Description);
+                }
+
+                response.ErrorMessage = sb.ToString();
+                sb.Length = 0;
+            }
+            else
+            {
+                await _emailService.SendEmailAsync(userIdentity.Email!, "Cambio de password",
+                    $"Hola {userIdentity.FirstName}, se ha cambiado el password de tu usuario de acuerdo a lo solicitado");
+                response.Success = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.ErrorMessage = "No se pudo completar la solicitud";
+            _logger.LogError(ex, "Error al cambiar password {Message}", ex.Message);
         }
 
         return response;

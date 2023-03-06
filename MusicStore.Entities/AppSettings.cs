@@ -4,7 +4,17 @@ public class AppSettings
 {
     public Storageconfiguration StorageConfiguration { get; set; } = default!;
     public Jwt Jwt { get; set; } = default!;
+    public SmtpConfiguration? SmtpConfiguration { get; set; }
+}
 
+public class SmtpConfiguration
+{
+    public string Server { get; set; } = default!;
+    public string UserName { get; set; } = default!;
+    public string Password { get; set; } = default!;
+    public int PortNumber { get; set; }
+    public bool EnableSsl { get; set; }
+    public string FromName { get; set; } = default!;
 }
 
 public class Storageconfiguration

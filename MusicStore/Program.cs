@@ -91,6 +91,7 @@ builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
 builder.Services.AddTransient<ISaleRepository, SaleRepository>();
 builder.Services.AddTransient<ISaleService, SaleService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 
 if (builder.Environment.IsDevelopment())
