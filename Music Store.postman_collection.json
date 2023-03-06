@@ -370,7 +370,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"juanito@microsoft.com\",\r\n  \"password\": \"miclavesecreta\"\r\n}",
+							"raw": "{\r\n  \"userName\": \"orlando.erick@gmail.com\",\r\n  \"password\": \"miclavesecreta\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -398,7 +398,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"firstName\": \"Menganito\",\r\n  \"lastName\": \"Noriega\",\r\n  \"email\": \"menganito@microsoft.com\",\r\n  \"documentNumber\": \"888994423\",\r\n  \"documentType\": \"DNI\",\r\n  \"age\": 45,\r\n  \"password\": \"miclavesecreta\",\r\n  \"confirmPassword\": \"miclavesecreta\",\r\n  \"role\": \"Admin\"\r\n}",
+							"raw": "{\r\n  \"firstName\": \"Erick\",\r\n  \"lastName\": \"Orlando\",\r\n  \"email\": \"orlando.erick@gmail.com\",\r\n  \"documentNumber\": \"888994423\",\r\n  \"documentType\": \"DNI\",\r\n  \"age\": 45,\r\n  \"password\": \"miclavesecreta\",\r\n  \"confirmPassword\": \"miclavesecreta\",\r\n  \"role\": \"Admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -414,6 +414,90 @@
 								"api",
 								"Users",
 								"Register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Solicitud de Reseteo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n     \"email\" :\"orlando.erick@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/Users/SendTokenToResetPassword",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"Users",
+								"SendTokenToResetPassword"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reseteo de clave",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"token\": \"CfDJ8CnSw7sMh05GgltoBmBS97uCEVZ/pc76tSCKgq3EllHkaDw00nmGby9mU94/HrDL0afzWuRLbYfkmpcLBxfonNgZ2edhx5URZd8FSTHNgNhx7zutC4QtrfAd/5YPfypZApV9pvpIujVfFzEN8yH9z+NESJa9tgUUFiEvZV5WSbmbMcZx9+i5hJLFEZF7nXrw1vUm49plzvdwbXxFDoLB6zgyAhxOt707BsBrIl7HzdCv\",\r\n  \"email\": \"orlando.erick@gmail.com\",\r\n  \"newPassword\": \"MiClaveSecreta\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/Users/ResetPassword",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"Users",
+								"ResetPassword"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cambiar clave",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"orlando.erick@gmail.com\",\r\n  \"oldPassword\": \"MiClaveSecreta\",\r\n  \"newPassword\": \"miclavesecreta\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/Users/ChangePassword",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"Users",
+								"ChangePassword"
 							]
 						}
 					},
