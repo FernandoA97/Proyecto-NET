@@ -38,7 +38,7 @@ public class ConcertService : IConcertService
                     page, 
                     rows);
             
-            response.Collection = tuple.Collection;
+            response.Data = tuple.Collection;
             response.TotalPages = tuple.Total / rows;
             if (tuple.Total % rows > 0) // Si el residuo es mayor a cero
                 response.TotalPages++;

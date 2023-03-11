@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MusicStore.Dto.Request;
+using MusicStore.Dto.Response;
 using MusicStore.Services.Interfaces;
 
 namespace MusicStore.Controllers;
@@ -24,6 +25,8 @@ public class ConcertsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(BaseResponsePagination<ConcertDtoResponse>), 200)]
+    [ProducesResponseType(typeof(BaseResponsePagination<ConcertDtoResponse>), 404)]
     public async Task<IActionResult> ListAsync(string? filter, int page = 1, int rows = 10)
     {
         var response = await _service.ListAsync(filter, page, rows);
@@ -37,6 +40,9 @@ public class ConcertsController : ControllerBase
     // POST api/Concerts
 
     [HttpPost]
+    [Authorize(Policy = "Admins")]
+    [ProducesResponseType(typeof(BaseResponseGeneric<int>), 200)]
+    [ProducesResponseType(typeof(BaseResponseGeneric<int>), 400)]
     public async Task<IActionResult> AddAsync([FromBody] ConcertDtoRequest request)
     {
         var response = await _service.AddAsync(request);
@@ -47,6 +53,8 @@ public class ConcertsController : ControllerBase
     // GET api/Concerts/5
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(BaseResponseGeneric<ConcertSingleDtoResponse>), 200)]
+    [ProducesResponseType(typeof(BaseResponseGeneric<ConcertSingleDtoResponse>), 404)]
     public async Task<IActionResult> FindByIdAsync(int id)
     {
         var response = await _service.FindByIdAsync(id);
@@ -56,6 +64,9 @@ public class ConcertsController : ControllerBase
 
     // PUT api/Concerts/5
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "Admins")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    [ProducesResponseType(typeof(BaseResponse), 400)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] ConcertDtoRequest request)
     {
         var response = await _service.UpdateAsync(id, request);
@@ -65,7 +76,9 @@ public class ConcertsController : ControllerBase
 
     // DELETE api/Concerts/5
     [HttpDelete("{id:int}")]
-
+    [Authorize(Policy = "Admins")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    [ProducesResponseType(typeof(BaseResponse), 404)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
         var response = await _service.DeleteAsync(id);
@@ -76,6 +89,9 @@ public class ConcertsController : ControllerBase
     // PATCH api/Concerts/5
 
     [HttpPatch("{id:int}")]
+    [Authorize(Policy = "Admins")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    [ProducesResponseType(typeof(BaseResponse), 404)]
     public async Task<IActionResult> FinalizeAsync(int id)
     {
         var response = await _service.FinalizeAsync(id);

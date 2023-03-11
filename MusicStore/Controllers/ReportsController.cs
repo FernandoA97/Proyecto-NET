@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using MusicStore.Dto.Response;
 using MusicStore.Services.Interfaces;
 
 namespace MusicStore.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "Admins")]
 public class ReportsController : ControllerBase
 {
     private readonly ISaleService _service;
@@ -14,7 +17,8 @@ public class ReportsController : ControllerBase
         _service = service;
     }
 
-    [HttpGet("ReportSales")]
+    [HttpGet]
+    [ProducesResponseType(typeof(BaseResponseGeneric<ICollection<ReportDtoResponse>>), 200)]
     public async Task<IActionResult> GetReportSales(string dateStart, string dateEnd)
     {
         try

@@ -2,7 +2,7 @@
 
 public class BaseResponsePagination<T> : BaseResponse
 {
-    public ICollection<T>? Collection { get; set; }
+    public ICollection<T>? Data { get; set; }
 
     public int TotalPages { get; set; }
 }

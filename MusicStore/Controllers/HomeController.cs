@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MusicStore.Dto.Response;
 using MusicStore.Services.Interfaces;
 
 namespace MusicStore.Controllers;
@@ -30,7 +31,7 @@ public class HomeController : ControllerBase
             return Ok(new
             {
                 Genres = genres.Data,
-                Concerts = concerts.Collection,
+                Concerts = concerts.Data,
                 Success = true
             });
         }

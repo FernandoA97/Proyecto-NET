@@ -103,7 +103,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admins", policy =>
     {
-        policy.RequireRole("Admin");
+        policy.RequireRole("Administrador");
         //policy.RequireClaim(ClaimTypes.Gender);
     });
 

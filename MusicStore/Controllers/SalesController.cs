@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MusicStore.Dto.Request;
@@ -22,6 +23,8 @@ public class SalesController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(BaseResponseGeneric<int>), 200)]
+    [ProducesResponseType(typeof(BaseResponseGeneric<int>), 400)]
     public async Task<IActionResult> CreateSaleAsync([FromBody] SaleDtoRequest request)
     {
         var email = User.FindFirstValue(ClaimTypes.Email)!;
@@ -37,6 +40,8 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("ListSales")]
+    [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 200)]
+    [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 404)]
     public async Task<IActionResult> GetListSales(string? filter, int page = 1, int rows = 10)
     {
         var email = HttpContext.User.FindFirst(ClaimTypes.Email)!.Value;
@@ -53,6 +58,8 @@ public class SalesController : ControllerBase
 
     [HttpGet("ListSalesByDate")]
     [Authorize(Policy = "Admins")]
+    [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 200)]
+    [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 404)]
     public async Task<IActionResult> GetListSalesByDate(string dateStart, string dateEnd, int page = 1, int rows = 10)
     {
         try
@@ -74,6 +81,8 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(BaseResponseGeneric<SaleDtoResponse>), 200)]
+    [ProducesResponseType(typeof(BaseResponseGeneric<SaleDtoResponse>), 404)]
     public async Task<IActionResult> GetSaleAsync(int id)
     {
         var response = await _service.GetSaleAsync(id);
