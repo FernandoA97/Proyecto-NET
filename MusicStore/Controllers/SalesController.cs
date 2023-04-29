@@ -11,8 +11,10 @@ namespace MusicStore.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+
 public class SalesController : ControllerBase
 {
+
     private readonly ISaleService _service;
     private readonly ILogger<SalesController> _logger;
 
@@ -53,11 +55,11 @@ public class SalesController : ControllerBase
             return Ok(response);
         }
 
-        return NotFound(response);
+        return NotFound("NO FUNCIONA");
     }
 
     [HttpGet("ListSalesByDate")]
-    [Authorize(Policy = "Admins")]
+    //[Authorize(Policy = "Admins")]
     [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 200)]
     [ProducesResponseType(typeof(BaseResponsePagination<SaleDtoResponse>), 404)]
     public async Task<IActionResult> GetListSalesByDate(string dateStart, string dateEnd, int page = 1, int rows = 10)
@@ -88,6 +90,6 @@ public class SalesController : ControllerBase
         var response = await _service.GetSaleAsync(id);
 
         return response.Success ? Ok(response) : NotFound(response);
-    }
+    } 
 
 }

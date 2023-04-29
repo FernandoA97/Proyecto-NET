@@ -13,7 +13,7 @@ public class GenreRepository : RepositoryBase<Genre>, IGenreRepository
     public async Task<List<Genre>> ListAsync()
     {
         return await Context.Set<Genre>()
-            .Where(p => p.Status)
+           // .Where(p => p.Status)
             .AsNoTracking()
             .ToListAsync();
     }

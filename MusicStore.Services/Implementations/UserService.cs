@@ -279,6 +279,7 @@ public class UserService : IUserService
                 }
 
                 response.ErrorMessage = sb.ToString();
+                Console.WriteLine(response.ErrorMessage);
                 sb.Length = 0;
             }
             else
@@ -290,6 +291,7 @@ public class UserService : IUserService
         }
         catch (Exception ex)
         {
+            Console.WriteLine("ERROR ");
             response.Success = false;
             response.ErrorMessage = "No se pudo completar la solicitud";
             _logger.LogError(ex, "Error al cambiar password {Message}", ex.Message);

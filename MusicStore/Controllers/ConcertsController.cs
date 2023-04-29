@@ -7,9 +7,9 @@ using MusicStore.Services.Interfaces;
 namespace MusicStore.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]")] 
 //[Authorize(Policy = "Admins")]
-[Authorize]
+//[Authorize]
 public class ConcertsController : ControllerBase
 {
     private readonly IConcertService _service;
@@ -40,7 +40,7 @@ public class ConcertsController : ControllerBase
     // POST api/Concerts
 
     [HttpPost]
-    [Authorize(Policy = "Admins")]
+    //[Authorize(Policy = "Admins")]
     [ProducesResponseType(typeof(BaseResponseGeneric<int>), 200)]
     [ProducesResponseType(typeof(BaseResponseGeneric<int>), 400)]
     public async Task<IActionResult> AddAsync([FromBody] ConcertDtoRequest request)
@@ -64,7 +64,7 @@ public class ConcertsController : ControllerBase
 
     // PUT api/Concerts/5
     [HttpPut("{id:int}")]
-    [Authorize(Policy = "Admins")]
+    //[Authorize(Policy = "Admins")]
     [ProducesResponseType(typeof(BaseResponse), 200)]
     [ProducesResponseType(typeof(BaseResponse), 400)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] ConcertDtoRequest request)
@@ -76,7 +76,7 @@ public class ConcertsController : ControllerBase
 
     // DELETE api/Concerts/5
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "Admins")]
+    //[Authorize(Policy = "Admins")]
     [ProducesResponseType(typeof(BaseResponse), 200)]
     [ProducesResponseType(typeof(BaseResponse), 404)]
     public async Task<IActionResult> DeleteAsync(int id)
@@ -89,7 +89,7 @@ public class ConcertsController : ControllerBase
     // PATCH api/Concerts/5
 
     [HttpPatch("{id:int}")]
-    [Authorize(Policy = "Admins")]
+    //[Authorize(Policy = "Admins")]
     [ProducesResponseType(typeof(BaseResponse), 200)]
     [ProducesResponseType(typeof(BaseResponse), 404)]
     public async Task<IActionResult> FinalizeAsync(int id)

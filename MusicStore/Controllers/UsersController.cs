@@ -62,6 +62,7 @@ namespace MusicStore.Controllers
         [ProducesResponseType(typeof(BaseResponse), 200)]
         public async Task<IActionResult> ChangePassword([FromBody] DtoChangePassword request)
         {
+        
             return Ok(await _service.ChangePasswordAsync(request));
         }
     }

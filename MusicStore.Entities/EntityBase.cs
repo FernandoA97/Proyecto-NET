@@ -9,6 +9,6 @@ public class EntityBase
 
     protected EntityBase()
     {
-        Status = true;
+        Status = true; 
     }
 }

@@ -103,8 +103,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admins", policy =>
     {
-        policy.RequireRole("Administrador");
-        //policy.RequireClaim(ClaimTypes.Gender);
+        policy.RequireRole("Admin");
+       // policy.RequireClaim(ClaimTypes.Gender);
     });
 
 });
@@ -142,10 +142,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthorization();  
 
 app.UseCors(corsConfig);
-
 app.MapControllers();
 
 app.MapGet("api/Genres", async (IGenreService service) => await service.ListAsync());
@@ -182,6 +181,6 @@ app.MapDelete("api/Genres/{id:int}", async (IGenreService service, int id) =>
 }).RequireAuthorization("Admins");
 
 app.Run();
-
+  
 
 
